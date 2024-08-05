@@ -1,0 +1,59 @@
+version: '2'
+services:
+  php:
+    build: .
+    volumes:
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      - ./:/app:delegated
+    ports:
+      - '8000:80'
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - yii_net
+    platform: linux/amd64
+  mysql:
+    image: mysql:8.0
+    container_name: yii_mysql
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: books
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3306:3306"
+    networks:
+      - yii_net
+    platform: linux/amd64
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: yii_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "8081:80"
+    networks:
+      - yii_net
+    depends_on:
+      - mysql
+    platform: linux/amd64
+
+  redis:
+    image: redis:alpine
+    container_name: yii_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - yii_net
+    platform: linux/amd64
+
+networks:
+  yii_net:
+
+volumes:
+  mysql_data:
